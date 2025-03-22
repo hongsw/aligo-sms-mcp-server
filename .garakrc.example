@@ -1,0 +1,8 @@
+# Aligo SMS API credentials
+ALIGO_API_KEY=your_api_key_here
+ALIGO_USER_ID=your_user_id_here
+ALIGO_TEST_MODE=Y  # Use 'Y' for test mode, 'N' for production
+
+# Original Garak configuration
+GARAK_API_KEY=your_garak_api_key
+BASE_URL=https://garak.wwwai.site  # Optional: override the base URL
