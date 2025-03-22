@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 
 // Mock aligoapi
 const mockAligoApi = {
@@ -55,6 +56,76 @@ describe('Aligo SMS MCP Server Tests', () => {
       version: "1.0.0",
       description: "Test MCP Server for Aligo SMS API"
     });
+
+    // Register tools
+    server.tool(
+      "send-sms",
+      {
+        sender: z.string().min(1).max(16).describe("Sender's phone number"),
+        receiver: z.string().min(1).describe("Recipient's phone number"),
+        message: z.string().min(1).max(2000).describe("SMS message content"),
+        msg_type: z.enum(["SMS", "LMS", "MMS"]).optional().describe("Message type"),
+        title: z.string().max(44).optional().describe("Message title"),
+      },
+      async ({ sender, receiver, message, msg_type, title }) => {
+        if ((msg_type === "LMS" || msg_type === "MMS") && !title) {
+          return {
+            content: [{ type: "text", text: "Title is required for LMS and MMS messages." }],
+            error: "Missing title for LMS/MMS"
+          };
+        }
+
+        const smsParams = {
+          sender,
+          receiver,
+          msg: message,
+          msg_type,
+          title
+        };
+
+        const result = await mockAligoApi.send({ body: smsParams });
+        return {
+          content: [{ type: "text", text: `Message sent successfully with ID: ${result.msg_id}` }],
+          result
+        };
+      }
+    );
+
+    server.tool(
+      "sms-remaining",
+      {},
+      async () => {
+        const result = await mockAligoApi.remain({ body: {} });
+        return {
+          content: [{ type: "text", text: `You have ${result.remain_count} SMS messages remaining.` }],
+          result
+        };
+      }
+    );
+
+    server.tool(
+      "sms-history",
+      {
+        page: z.number().min(1).default(1).describe("Page number"),
+        page_size: z.number().min(1).max(500).default(30).describe("Records per page"),
+        start_date: z.string().regex(/^\d{8}$/).optional().describe("Start date (YYYYMMDD)"),
+        limit_day: z.string().regex(/^\d{8}$/).optional().describe("End date (YYYYMMDD)"),
+      },
+      async ({ page, page_size, start_date, limit_day }) => {
+        const params = {
+          page,
+          page_size,
+          start_date,
+          limit_day
+        };
+        
+        const result = await mockAligoApi.list({ body: params });
+        return {
+          content: [{ type: "text", text: `Retrieved ${result.list?.length || 0} SMS messages out of ${result.total_count || 0} total.` }],
+          result
+        };
+      }
+    );
   });
 
   describe('send-sms Tool', () => {
