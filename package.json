@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Model Context Protocol (MCP) server for Aligo SMS API integration",
   "type": "module",
-  "main": "mcp-aligo-server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node mcp-aligo-server.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "start": "node server.js",
+    "test": "node testServer.js"
   },
   "keywords": [
     "aligo",
@@ -20,10 +20,7 @@
   "author": "hongsw",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.6.1",
-    "aligoapi": "^1.1.3",
-    "rc": "^1.2.8",
-    "zod": "^3.22.4"
+    "rc": "^1.2.8"
   },
   "devDependencies": {
     "jest": "^29.7.0"
