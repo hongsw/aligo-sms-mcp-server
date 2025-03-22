@@ -2,14 +2,13 @@ import { jest } from '@jest/globals';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 // Mock aligoapi
-jest.mock('aligoapi', () => ({
+const mockAligoApi = {
   send: jest.fn(),
   remain: jest.fn(),
   list: jest.fn()
-}));
+};
 
-// Import after mocking
-import aligoapi from "aligoapi";
+jest.mock('aligoapi', () => mockAligoApi);
 
 describe('Aligo SMS MCP Server Tests', () => {
   let server;
@@ -46,9 +45,9 @@ describe('Aligo SMS MCP Server Tests', () => {
     };
 
     // Setup aligoapi mocks
-    aligoapi.send.mockResolvedValue(mockSendResponse);
-    aligoapi.remain.mockResolvedValue(mockRemainResponse);
-    aligoapi.list.mockResolvedValue(mockHistoryResponse);
+    mockAligoApi.send.mockResolvedValue(mockSendResponse);
+    mockAligoApi.remain.mockResolvedValue(mockRemainResponse);
+    mockAligoApi.list.mockResolvedValue(mockHistoryResponse);
 
     // Initialize server
     server = new McpServer({
@@ -68,7 +67,7 @@ describe('Aligo SMS MCP Server Tests', () => {
 
       const result = await server.tools['send-sms'].handler(params);
       
-      expect(aligoapi.send).toHaveBeenCalled();
+      expect(mockAligoApi.send).toHaveBeenCalled();
       expect(result.result).toEqual(mockSendResponse);
       expect(result.content[0].text).toContain('test-msg-id');
     });
@@ -84,7 +83,7 @@ describe('Aligo SMS MCP Server Tests', () => {
 
       const result = await server.tools['send-sms'].handler(params);
       
-      expect(aligoapi.send).toHaveBeenCalled();
+      expect(mockAligoApi.send).toHaveBeenCalled();
       expect(result.result).toEqual(mockSendResponse);
     });
 
@@ -106,7 +105,7 @@ describe('Aligo SMS MCP Server Tests', () => {
     test('should check remaining SMS count', async () => {
       const result = await server.tools['sms-remaining'].handler({});
       
-      expect(aligoapi.remain).toHaveBeenCalled();
+      expect(mockAligoApi.remain).toHaveBeenCalled();
       expect(result.result).toEqual(mockRemainResponse);
       expect(result.content[0].text).toContain('100');
     });
@@ -121,7 +120,7 @@ describe('Aligo SMS MCP Server Tests', () => {
 
       const result = await server.tools['sms-history'].handler(params);
       
-      expect(aligoapi.list).toHaveBeenCalled();
+      expect(mockAligoApi.list).toHaveBeenCalled();
       expect(result.result).toEqual(mockHistoryResponse);
       expect(result.content[0].text).toContain('1');
     });
@@ -136,7 +135,7 @@ describe('Aligo SMS MCP Server Tests', () => {
 
       const result = await server.tools['sms-history'].handler(params);
       
-      expect(aligoapi.list).toHaveBeenCalledWith(
+      expect(mockAligoApi.list).toHaveBeenCalledWith(
         expect.objectContaining({
           body: expect.objectContaining({
             start_date: '20240301',
