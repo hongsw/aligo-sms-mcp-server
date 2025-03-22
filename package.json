@@ -1,0 +1,39 @@
+{
+  "name": "aligo-sms-mcp-server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) server for Aligo SMS API integration",
+  "type": "module",
+  "main": "mcp-aligo-server.js",
+  "scripts": {
+    "start": "node mcp-aligo-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "aligo",
+    "sms",
+    "mcp",
+    "model",
+    "context",
+    "protocol",
+    "api"
+  ],
+  "author": "hongsw",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.2.0",
+    "aligoapi": "^1.1.3",
+    "rc": "^1.2.8",
+    "zod": "^3.22.4"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hongsw/aligo-sms-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hongsw/aligo-sms-mcp-server/issues"
+  },
+  "homepage": "https://github.com/hongsw/aligo-sms-mcp-server#readme"
+}
