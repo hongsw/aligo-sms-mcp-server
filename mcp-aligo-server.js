@@ -321,5 +321,9 @@ server.resource(
 );
 
 // Start the MCP server
-const transport = new StdioServerTransport();
-await server.connect(transport);
+if (process.env.NODE_ENV !== 'test') {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}
+
+export default server;

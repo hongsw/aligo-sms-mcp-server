@@ -11,13 +11,20 @@ const mockAligoApi = {
 
 jest.mock('aligoapi', () => mockAligoApi);
 
+// Mock rc
+jest.mock('rc', () => () => ({
+  ALIGO_API_KEY: 'test-api-key',
+  ALIGO_USER_ID: 'test-user-id',
+  ALIGO_TEST_MODE: 'Y'
+}));
+
 describe('Aligo SMS MCP Server Tests', () => {
   let server;
   let mockSendResponse;
   let mockRemainResponse;
   let mockHistoryResponse;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset mocks
     jest.clearAllMocks();
 
@@ -50,12 +57,9 @@ describe('Aligo SMS MCP Server Tests', () => {
     mockAligoApi.remain.mockResolvedValue(mockRemainResponse);
     mockAligoApi.list.mockResolvedValue(mockHistoryResponse);
 
-    // Initialize server
-    server = new McpServer({
-      name: "Aligo-SMS-MCP-Server-Test",
-      version: "1.0.0",
-      description: "Test MCP Server for Aligo SMS API"
-    });
+    // Import server module
+    const { default: createServer } = await import('../mcp-aligo-server.js');
+    server = createServer;
 
     // Register tools
     server.tool(
