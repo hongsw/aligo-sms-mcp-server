@@ -230,6 +230,7 @@ function getMimeType(filename) {
  */
 server.tool(
   "send-sms",
+  "Send SMS messages through the Aligo API",
   {
     sender: z.string().min(1).max(16).describe("Sender's phone number (registered with Aligo)"),
     receiver: z.string().min(1).describe("Recipient's phone number, or comma-separated list for multiple recipients"),
@@ -296,13 +297,7 @@ server.tool(
 );
 
 // 프로그램의 메인 함수
-async function main() {
-  // 도구 등록 로그 출력
-  debug("서버에 등록된 도구:");
-  debug("send-sms - 알리고 API를 통한 SMS 발송");
-  debug("sms-remaining - 알리고 계정 잔여 SMS 수 확인");
-  debug("sms-history - SMS 발송 내역 조회");
-  
+async function main() {  
   // 등록된 도구 목록 확인
   const tools = server._registeredTools;
   if (tools) {

@@ -8,7 +8,7 @@
     "start": "node index.js"
   },
   "bin": {
-    "aligo-sms": "index.js"
+    "mcp-server": "index.js"
   },
   "keywords": [
     "aligo",
