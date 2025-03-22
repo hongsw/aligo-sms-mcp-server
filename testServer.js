@@ -12,7 +12,7 @@ const DEBUG = process.env.DEBUG === 'true';
 // 디버그 로그 함수
 function debug(...args) {
   if (DEBUG) {
-    console.log(...args);
+    console.error(...args);
   }
 }
 
@@ -72,7 +72,7 @@ const testRequests = [
  * 서버 테스트 함수
  */
 async function testServer() {
-  console.log("MCP 서버 테스트를 시작합니다...");
+  console.error("MCP 서버 테스트를 시작합니다...");
   
   // 서버 프로세스 생성
   const serverProcess = spawn('node', [serverScriptPath], {
@@ -86,8 +86,8 @@ async function testServer() {
   // 응답 리스너 설정
   serverProcess.stdout.on('data', (data) => {
     const response = data.toString().trim();
-    console.log("\n응답 받음:");
-    console.log(response);
+    console.error("\n응답 받음:");
+    console.error(response);
     
     try {
       const parsedResponse = JSON.parse(response);
@@ -95,20 +95,20 @@ async function testServer() {
       
       // 모든 요청이 처리되었는지 확인
       if (results.length >= testRequests.length) {
-        console.log("\n모든 테스트가 완료되었습니다.");
+        console.error("\n모든 테스트가 완료되었습니다.");
         
         // 테스트 결과 요약 출력
-        console.log("\n테스트 결과 요약:");
+        console.error("\n테스트 결과 요약:");
         for (let i = 0; i < results.length; i++) {
           const req = testRequests[i];
           const res = results[i];
           
-          console.log(`\n[요청 ${i+1}] ${req.method}`);
+          console.error(`\n[요청 ${i+1}] ${req.method}`);
           if (res.error) {
-            console.log(`- 오류: ${res.error.message} (코드: ${res.error.code})`);
+            console.error(`- 오류: ${res.error.message} (코드: ${res.error.code})`);
           } else {
             const resultStr = JSON.stringify(res.result).substring(0, 100);
-            console.log(`- 성공: ${resultStr}${resultStr.length >= 100 ? '...' : ''}`);
+            console.error(`- 성공: ${resultStr}${resultStr.length >= 100 ? '...' : ''}`);
           }
         }
         
@@ -125,7 +125,7 @@ async function testServer() {
         
         // 서버 종료
         serverProcess.kill();
-        console.log("\n테스트가 완료되었습니다.");
+        console.error("\n테스트가 완료되었습니다.");
       }
     } catch (error) {
       console.error("응답 파싱 오류:", error);
@@ -142,8 +142,8 @@ async function testServer() {
   
   // 각 요청을 순차적으로 전송
   for (const request of testRequests) {
-    console.log("\n요청 전송:");
-    console.log(JSON.stringify(request, null, 2));
+    console.error("\n요청 전송:");
+    console.error(JSON.stringify(request, null, 2));
     
     // 요청 전송
     serverProcess.stdin.write(JSON.stringify(request) + '\n');

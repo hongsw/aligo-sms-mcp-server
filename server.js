@@ -353,7 +353,7 @@ function main() {
         try {
           const request = JSON.parse(inputLine);
           const response = await handleRequest(request);
-          console.log(JSON.stringify(response));
+          console.error(JSON.stringify(response));
         } catch (parseError) {
           debug('JSON 파싱 오류:', parseError);
           
@@ -367,7 +367,7 @@ function main() {
             }
           };
           
-          console.log(JSON.stringify(errorResponse));
+          console.error(JSON.stringify(errorResponse));
         }
       }
     } catch (error) {
@@ -383,7 +383,7 @@ function main() {
         }
       };
       
-      console.log(JSON.stringify(errorResponse));
+      console.error(JSON.stringify(errorResponse));
     }
   });
   
@@ -401,7 +401,7 @@ function main() {
       }
     };
     
-    console.log(JSON.stringify(errorResponse));
+    console.error(JSON.stringify(errorResponse));
   });
   
   // 종료 신호 처리
