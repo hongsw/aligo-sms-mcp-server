@@ -5,7 +5,11 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node testServer.js"
+  },
+  "bin": {
+    "aligo-sms": "server.js"
   },
   "keywords": [
     "aligo",

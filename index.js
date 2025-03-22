@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Aligo SMS MCP 서버
  * 
