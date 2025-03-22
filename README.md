@@ -11,7 +11,8 @@ Model Context Protocol(MCP)를 사용하여 Aligo SMS API에 접근할 수 있�
       "command": "npx",
       "args": [
         "-y",
-        "github:hongsw/aligo-sms-mcp-server"
+        "github:hongsw/aligo-sms-mcp-server",
+        "mcp-server"
       ]
     }
   }
