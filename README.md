@@ -13,25 +13,14 @@ cd aligo-sms-mcp-server
 npm install
 ```
 
-## 직접 실행 (npx)
-
-npx를 사용하여 설치 없이 바로 실행할 수 있습니다:
-
-```bash
-# GitHub 저장소에서 직접 실행
-npx github:hongsw/aligo-sms-mcp-server
-
-# 디버그 모드로 실행
-DEBUG=true npx github:hongsw/aligo-sms-mcp-server
-```
-
 ## 설정
 
 API 키 설정은 `.garakrc` 파일에 저장됩니다. 홈 디렉토리에 다음과 같은 파일을 만듭니다:
 
 ```
-apiKey=발급받은_API_키
-userId=발급받은_사용자_아이디
+ALIGO_API_KEY=발급받은_API_키
+ALIGO_USER_ID=발급받은_사용자_아이디
+ALIGO_TEST_MODE=Y  # 테스트 모드 (Y/N)
 ```
 
 ## 사용 방법
@@ -40,21 +29,23 @@ userId=발급받은_사용자_아이디
 
 ```bash
 # 서버 시작
-npm start
+node startServer.js
 
 # 디버그 모드로 서버 시작 (모든 로그 출력)
-DEBUG=true npm start
+DEBUG=true node startServer.js
 ```
+
+서버가 시작되면 PID와 함께 서버가 실행 중임을 알려주는 메시지가 표시됩니다.
 
 ### 직접 JSON-RPC 요청 보내기
 
 서버에 직접 요청을 보내려면 파이프를 통해 JSON-RPC 요청을 전송할 수 있습니다:
 
 ```bash
-echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test-client","version":"1.0.0"}}}' | node server.js
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test-client","version":"1.0.0"}}}' | node mcpServer.js
 
 # 디버그 모드로 실행
-echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test-client","version":"1.0.0"}}}' | DEBUG=true node server.js
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test-client","version":"1.0.0"}}}' | DEBUG=true node mcpServer.js
 ```
 
 ### 테스트 스크립트 실행
@@ -63,10 +54,10 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 
 ```bash
 # 일반 모드로 테스트
-npm test
+node testServer.js
 
 # 디버그 모드로 테스트
-DEBUG=true npm test
+DEBUG=true node testServer.js
 ```
 
 이 스크립트는 초기화, SMS 전송, 남은 SMS 조회 등의 요청을 자동으로 전송합니다.
@@ -75,51 +66,24 @@ DEBUG=true npm test
 
 Claude AI와 함께 사용하려면 y-cli를 통해 서버를 연결해야 합니다.
 
-```bash
-# 로컬에 설치한 경우
-y-cli chat --tool "node server.js" --tool-name "aligo-sms"
+1. 먼저 서버를 시작합니다:
+   ```bash
+   node startServer.js
+   ```
 
-# npx로 직접 실행
-y-cli chat --tool "npx github:hongsw/aligo-sms-mcp-server" --tool-name "aligo-sms"
-```
+2. 다른 터미널에서 Claude와 대화하면서 MCP 도구에 접근합니다:
+   ```bash
+   y-cli chat --tool "node mcpServer.js" --tool-name "aligo-sms"
+   ```
 
-## 지원되는 메서드
-
-### Initialize (초기화)
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "method": "initialize",
-  "params": {
-    "protocolVersion": "2024-11-05",
-    "capabilities": {},
-    "clientInfo": {
-      "name": "test-client",
-      "version": "1.0.0"
-    }
-  }
-}
-```
-
-### Tools (도구 목록)
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 2,
-  "method": "tools",
-  "params": {}
-}
-```
+## 지원되는 도구
 
 ### SMS 메시지 전송
 
 ```json
 {
   "jsonrpc": "2.0",
-  "id": 3,
+  "id": 1,
   "method": "send-sms",
   "params": {
     "sender": "01000000000",
@@ -136,7 +100,7 @@ y-cli chat --tool "npx github:hongsw/aligo-sms-mcp-server" --tool-name "aligo-sm
 ```json
 {
   "jsonrpc": "2.0",
-  "id": 4,
+  "id": 1,
   "method": "sms-remaining",
   "params": {}
 }
@@ -147,13 +111,30 @@ y-cli chat --tool "npx github:hongsw/aligo-sms-mcp-server" --tool-name "aligo-sm
 ```json
 {
   "jsonrpc": "2.0",
-  "id": 5,
+  "id": 1,
   "method": "sms-history",
   "params": {
-    "limit": 10,
-    "page": 1
+    "page": 1,
+    "page_size": 10
   }
 }
+```
+
+## 프로그래밍 방식으로 서버 사용하기
+
+Node.js 애플리케이션에서 서버를 시작하려면:
+
+```javascript
+import { startServer } from './startServer.js';
+
+// 서버 시작
+startServer()
+  .then(() => {
+    console.log('서버가 성공적으로 시작되었습니다.');
+  })
+  .catch(error => {
+    console.error('서버 시작 오류:', error);
+  });
 ```
 
 ## 문제 해결
@@ -171,16 +152,13 @@ y-cli chat --tool "npx github:hongsw/aligo-sms-mcp-server" --tool-name "aligo-sm
 
 ```bash
 # 디버그 모드로 서버 시작
-DEBUG=true npm start
+DEBUG=true node startServer.js
 
 # 디버그 모드로 직접 요청 테스트
-DEBUG=true node server.js
+DEBUG=true node mcpServer.js
 
 # 디버그 모드로 테스트 스크립트 실행
-DEBUG=true npm test
-
-# npx로 디버그 모드 실행
-DEBUG=true npx github:hongsw/aligo-sms-mcp-server
+DEBUG=true node testServer.js
 ```
 
 디버그 모드에서는 다음과 같은 정보가 표시됩니다:
@@ -190,22 +168,177 @@ DEBUG=true npx github:hongsw/aligo-sms-mcp-server
 - 서버 처리 단계별 로그
 - 오류 발생 시 상세 정보
 
-## 구조
+## 개발 참고사항
 
 MCP 서버는 다음과 같은 구조로 이루어져 있습니다:
 
-- `server.js`: 메인 MCP 서버 구현 - JSON-RPC 메시지 처리 및 Aligo API 연동 
+- `index.js`: 메인 MCP 서버 구현
+- `mcpServer.js`: MCP 통신을 처리하는 래퍼 스크립트
+- `startServer.js`: 서버를 쉽게 시작할 수 있는 유틸리티
 - `testServer.js`: 서버 기능 테스트 스크립트
 
-## 요구사항
+도구는 다음과 같이 등록됩니다:
 
-- Node.js 16.x 이상
-- Aligo SMS API 계정 (API 키 및 사용자 ID)
-- MCP(Model Context Protocol)에 대한 기본 이해
+```javascript
+server.tool(
+  "send-sms",
+  {
+    sender: z.string().min(1).max(16).describe("Sender's phone number"),
+    receiver: z.string().min(1).describe("Recipient's phone number"),
+    message: z.string().min(1).max(2000).describe("SMS message content"),
+    // ... 추가 파라미터 ...
+  },
+  async ({ sender, receiver, message, /* ... */ }) => {
+    // 도구 구현 로직
+    return {
+      content: [{ type: "text", text: "결과 메시지" }],
+      result: { /* 결과 데이터 */ }
+    };
+  }
+);
+```
 
-## 기능
+## Features
 
-- Aligo API를 사용하여 SMS, LMS 및 MMS 메시지 전송
-- 메시지 잔액 확인
-- 메시지 내역 조회
-- 다양한 형식의 메시지 지원 (텍스트, 이미지 첨부)
+- Send SMS, LMS, and MMS messages using Aligo API
+- Schedule messages for future delivery
+- Check remaining message balance
+- Retrieve message history
+- Query specific message details
+
+## Prerequisites
+
+- Node.js 16.x or higher
+- An Aligo API account with API key and user ID
+- Basic understanding of MCP (Model Context Protocol)
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/hongsw/aligo-sms-mcp-server.git
+   cd aligo-sms-mcp-server
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure your Aligo API credentials:
+   
+   Create a `.garakrc` file in your home directory with the following content:
+   ```
+   ALIGO_API_KEY=your_api_key
+   ALIGO_USER_ID=your_user_id
+   ALIGO_TEST_MODE=Y  # Optional: Use 'Y' for test mode
+   ```
+
+## Usage
+
+### Starting the MCP server
+
+```bash
+npm start
+```
+
+This will start the MCP server that listens for commands on stdin and responds on stdout. It can be connected to AI assistants or other clients that support the MCP protocol.
+
+### Available Tools
+
+#### 1. send-sms
+
+Sends SMS, LMS, or MMS messages.
+
+Parameters:
+- `sender` (string): Registered sender's phone number
+- `receiver` (string): Recipient's phone number(s), comma-separated for multiple recipients
+- `message` (string): SMS message content
+- `msg_type` (string, optional): Message type - 'SMS', 'LMS', or 'MMS'
+- `title` (string, optional): Message title (required for LMS/MMS)
+- `schedule_date` (string, optional): Scheduled date in YYYYMMDD format
+- `schedule_time` (string, optional): Scheduled time in HHMM format
+
+Example request:
+```json
+{
+  "tool": "send-sms",
+  "parameters": {
+    "sender": "01012345678",
+    "receiver": "01098765432",
+    "message": "Hello, this is a test message!",
+    "msg_type": "SMS"
+  }
+}
+```
+
+#### 2. sms-remaining
+
+Checks the remaining message balance in your Aligo account.
+
+Example request:
+```json
+{
+  "tool": "sms-remaining",
+  "parameters": {}
+}
+```
+
+#### 3. sms-history
+
+Retrieves the history of sent messages.
+
+Parameters:
+- `page` (number, optional): Page number for pagination (default: 1)
+- `page_size` (number, optional): Records per page (default: 30, max: 500)
+- `start_date` (string, optional): Start date in YYYYMMDD format
+- `limit_day` (string, optional): End date in YYYYMMDD format
+
+Example request:
+```json
+{
+  "tool": "sms-history",
+  "parameters": {
+    "page": 1,
+    "page_size": 50,
+    "start_date": "20250301",
+    "limit_day": "20250331"
+  }
+}
+```
+
+### Available Resources
+
+#### sms-message
+
+Retrieves details about a specific message.
+
+URI pattern: `sms://{messageId}`
+
+Example:
+```
+sms://MSG12345678
+```
+
+## Integration with AI Assistants
+
+This MCP server is designed to be integrated with AI assistants that support the Model Context Protocol. The server handles stdin/stdout communication, making it compatible with various MCP client implementations.
+
+To use with OpenAI's function calling:
+
+1. Start the MCP server
+2. Use an MCP client to connect your AI assistant to the server
+3. The AI assistant can now use the tools and resources defined in the server
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Aligo for providing the SMS API
+- Model Context Protocol for standardizing tool and resource access

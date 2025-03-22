@@ -1,6 +1,7 @@
 .garakrc
 node_modules
 simple-server.js
+testServer.js
 
 # Logs
 logs
