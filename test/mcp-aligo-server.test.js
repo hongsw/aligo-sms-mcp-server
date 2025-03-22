@@ -1,9 +1,15 @@
 import { jest } from '@jest/globals';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import aligoapi from "aligoapi";
 
 // Mock aligoapi
-jest.mock('aligoapi');
+jest.mock('aligoapi', () => ({
+  send: jest.fn(),
+  remain: jest.fn(),
+  list: jest.fn()
+}));
+
+// Import after mocking
+import aligoapi from "aligoapi";
 
 describe('Aligo SMS MCP Server Tests', () => {
   let server;
