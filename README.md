@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/hongsw-aligo-sms-mcp-server-badge.png)](https://mseep.ai/app/hongsw-aligo-sms-mcp-server)
+
 # Aligo SMS MCP 서버
 
 Model Context Protocol(MCP)를 사용하여 Aligo SMS API에 접근할 수 있는 서버입니다. Claude AI와 같은 MCP 호환 AI 에이전트가 SMS 메시지를 보내거나 관련 정보를 조회할 수 있습니다.
