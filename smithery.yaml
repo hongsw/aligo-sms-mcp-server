@@ -1,0 +1,29 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - apiKey
+      - userId
+    properties:
+      apiKey:
+        type: string
+        description: Aligo API key
+      userId:
+        type: string
+        description: Aligo user ID
+      testMode:
+        type: boolean
+        default: false
+        description: Enable test mode (true for Y, false for N)
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({ command: "node", args: ["index.js"], env: { GARAK_ALIGO_API_KEY: config.apiKey, GARAK_ALIGO_USER_ID: config.userId, GARAK_ALIGO_TEST_MODE: config.testMode ? "Y" : "N" } })
+  exampleConfig:
+    apiKey: your-aligo-api-key
+    userId: your-aligo-user-id
+    testMode: false
