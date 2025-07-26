@@ -84,6 +84,10 @@ web_modules/
 .env.production.local
 .env.local
 
+# Claude session file
+.claude-session.env
+.env.claude-session
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
