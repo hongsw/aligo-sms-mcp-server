@@ -22,7 +22,7 @@ startCommand:
   commandFunction:
     # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
     |-
-    (config) => ({ command: "node", args: ["index.js"], env: { GARAK_ALIGO_API_KEY: config.apiKey, GARAK_ALIGO_USER_ID: config.userId, GARAK_ALIGO_TEST_MODE: config.testMode ? "Y" : "N" } })
+    (config) => ({ command: "node", args: ["index.js"], env: { garak_ALIGO_API_KEY: config.apiKey, garak_ALIGO_USER_ID: config.userId, garak_ALIGO_TEST_MODE: config.testMode ? "Y" : "N" } })
   exampleConfig:
     apiKey: your-aligo-api-key
     userId: your-aligo-user-id
