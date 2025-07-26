@@ -1,6 +1,6 @@
 {
   "name": "aligo-sms-mcp-server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Model Context Protocol (MCP) server for Aligo SMS API integration",
   "type": "module",
   "main": "mcp-aligo-server.js",
