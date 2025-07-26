@@ -1,0 +1,14 @@
+node_modules
+.git
+.gitignore
+*.log
+.DS_Store
+.tool-versions
+uuid.key
+.claude-session.env
+.env.claude-session
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
