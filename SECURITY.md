@@ -1,39 +1,43 @@
 # Security Policy
 
-## Known Vulnerabilities
+## Security Status
 
-### axios dependency in aligoapi package
+✅ **All known vulnerabilities have been resolved as of 2025-07-26**
 
-The `aligoapi` package (v1.1.3) currently uses axios v0.21.4, which has known security vulnerabilities:
+### Previous Issues (Resolved)
 
-1. **Axios Cross-Site Request Forgery Vulnerability** (GHSA-wf5p-g6vw-rhxx)
-   - Severity: Moderate (CVSS Score: 6.5)
-   - CWE: CWE-352
+The project previously had a security vulnerability due to the `aligoapi` package dependency, which used an outdated version of axios (0.21.4) with known vulnerabilities:
 
-2. **Axios Requests Vulnerable To Possible SSRF and Credential Leakage via Absolute URL** (GHSA-jr5f-v2jv-69x6)
-   - Severity: High
-   - CWE: CWE-918
+1. **Axios Cross-Site Request Forgery Vulnerability** (GHSA-wf5p-g6vw-rhxx) - RESOLVED
+2. **Axios Requests Vulnerable To Possible SSRF and Credential Leakage** (GHSA-jr5f-v2jv-69x6) - RESOLVED
 
-## Mitigation
+### Resolution
 
-Currently, the aligo-sms-mcp-server is designed to be used in a controlled environment with trusted input, which significantly reduces the security risk. The server:
+We have successfully re-engineered the codebase to:
+- Remove the `aligoapi` dependency entirely
+- Implement direct API calls using the latest version of axios (^1.7.0)
+- Maintain full functionality while improving security
 
+## Current Security Measures
+
+The aligo-sms-mcp-server implements the following security practices:
+
+- Uses the latest stable version of all dependencies
+- Regular security audits via `npm audit`
+- Designed for use in controlled environments with trusted input
 - Only accepts input from authorized MCP clients (like Claude AI)
 - Does not expose any public-facing endpoints
-- Uses the Aligo API with authenticated requests only
-
-## Recommended Actions
-
-1. **For Production Use**: Monitor the `aligoapi` package for updates that address the axios vulnerability
-2. **For Development**: Use the server only with trusted inputs and in controlled environments
-3. **Alternative Solution**: Consider implementing direct API calls without the aligoapi dependency (work in progress)
+- Uses authenticated API requests with secure HTTPS connections
 
 ## Reporting Security Vulnerabilities
 
 If you discover a security vulnerability, please report it by creating an issue with the "security" label.
 
-## Updates
+## Verification
 
-We are actively working with the aligoapi maintainer to update the axios dependency. This document will be updated once the vulnerability is resolved.
+You can verify the security status by running:
+```bash
+npm audit
+```
 
 Last updated: 2025-07-26

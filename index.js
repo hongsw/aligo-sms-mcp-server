@@ -8,8 +8,8 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import rc from "rc";
-import https from 'https';
-import querystring from 'querystring';
+import axios from 'axios';
+import FormData from 'form-data';
 import fs from 'fs';
 import path from 'path';
 
@@ -38,170 +38,99 @@ const server = new McpServer({
 });
 
 /**
- * 직접 Aligo API 요청을 보내는 함수
+ * 직접 Aligo API 요청을 보내는 함수 (axios 사용)
  */
 async function sendAligoSMS(params, authData) {
-  return new Promise((resolve, reject) => {
-    try {
-      // 기본 POST 데이터 준비
-      const postData = {
-        key: authData.apiKey,
-        user_id: authData.userId,
-        sender: params.sender,
-        receiver: params.receiver,
-        msg: params.message,
-        testmode_yn: authData.testMode ? 'Y' : 'N'
-      };
-      
-      // 선택적 파라미터 추가
-      if (params.msg_type === 'LMS' || params.msg_type === 'MMS') {
-        postData.title = params.title;
-      }
-      
-      if (params.destination) {
-        postData.destination = params.destination;
-      }
-      
-      if (params.schedule_date) {
-        postData.rdate = params.schedule_date;
-      }
-      
-      if (params.schedule_time) {
-        postData.rtime = params.schedule_time;
-      }
-      
-      // 이미지 첨부가 필요한 경우 (MMS)
-      if (params.msg_type === 'MMS' && params.image_path) {
-        // MMS 이미지 파일이 있는 경우
-        const boundaryKey = `----WebKitFormBoundary${Math.random().toString(16).slice(2)}`;
-        const CRLF = '\r\n';
-        
-        // 폼 바디 데이터 구성
-        let formBody = [];
-        
-        // 일반 텍스트 필드 추가
-        Object.keys(postData).forEach(key => {
-          const value = postData[key];
-          formBody.push(`--${boundaryKey}`);
-          formBody.push(`Content-Disposition: form-data; name="${key}"`);
-          formBody.push('');
-          formBody.push(value);
-        });
-        
-        // 이미지 파일 추가
-        if (fs.existsSync(params.image_path)) {
-          const fileContent = fs.readFileSync(params.image_path);
-          const fileName = path.basename(params.image_path);
-          
-          formBody.push(`--${boundaryKey}`);
-          formBody.push(`Content-Disposition: form-data; name="image"; filename="${fileName}"`);
-          formBody.push(`Content-Type: ${getMimeType(fileName)}`);
-          formBody.push('');
-          
-          // 텍스트 부분과 파일 부분을 합치기
-          const textPart = formBody.join(CRLF);
-          const endPart = `${CRLF}--${boundaryKey}--${CRLF}`;
-          
-          // 바이너리와 텍스트 부분을 결합
-          const dataBuffer = Buffer.concat([
-            Buffer.from(textPart + CRLF, 'utf8'),
-            fileContent,
-            Buffer.from(endPart, 'utf8')
-          ]);
-          
-          // 요청 옵션
-          const options = {
-            hostname: 'apis.aligo.in',
-            port: 443,
-            path: '/send/',
-            method: 'POST',
-            headers: {
-              'Content-Type': `multipart/form-data; boundary=${boundaryKey}`,
-              'Content-Length': dataBuffer.length
-            }
-          };
-          
-          // HTTPS 요청 생성
-          const req = https.request(options, res => {
-            let responseData = '';
-            
-            res.on('data', chunk => {
-              responseData += chunk;
-            });
-            
-            res.on('end', () => {
-              try {
-                const parsedData = JSON.parse(responseData);
-                resolve(parsedData);
-              } catch (error) {
-                debug('응답 파싱 오류:', error);
-                resolve(responseData); // 파싱 실패 시 원본 데이터 반환
-              }
-            });
-          });
-          
-          // 요청 오류 처리
-          req.on('error', error => {
-            debug('요청 오류:', error);
-            reject(error);
-          });
-          
-          // 데이터 전송
-          req.write(dataBuffer);
-          req.end();
-        } else {
-          reject(new Error(`이미지 파일을 찾을 수 없습니다: ${params.image_path}`));
-        }
-      } else {
-        // 일반 텍스트 메시지 (MMS가 아니거나 이미지가 없는 경우)
-        const postDataString = querystring.stringify(postData);
-        
-        // 요청 옵션
-        const options = {
-          hostname: 'apis.aligo.in',
-          port: 443,
-          path: '/send/',
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': Buffer.byteLength(postDataString)
-          }
-        };
-        
-        // HTTPS 요청 생성
-        const req = https.request(options, res => {
-          let responseData = '';
-          
-          res.on('data', chunk => {
-            responseData += chunk;
-          });
-          
-          res.on('end', () => {
-            try {
-              const parsedData = JSON.parse(responseData);
-              resolve(parsedData);
-            } catch (error) {
-              debug('응답 파싱 오류:', error);
-              resolve(responseData); // 파싱 실패 시 원본 데이터 반환
-            }
-          });
-        });
-        
-        // 요청 오류 처리
-        req.on('error', error => {
-          debug('요청 오류:', error);
-          reject(error);
-        });
-        
-        // 데이터 전송
-        req.write(postDataString);
-        req.end();
-      }
-    } catch (error) {
-      debug('알리고 SMS 전송 오류:', error);
-      reject(error);
+  try {
+    const apiUrl = 'https://apis.aligo.in/send/';
+    
+    // 기본 POST 데이터 준비
+    const postData = {
+      key: authData.apiKey,
+      user_id: authData.userId,
+      sender: params.sender,
+      receiver: params.receiver,
+      msg: params.message,
+      testmode_yn: authData.testMode ? 'Y' : 'N'
+    };
+    
+    // 선택적 파라미터 추가
+    if (params.msg_type === 'LMS' || params.msg_type === 'MMS') {
+      postData.title = params.title;
     }
-  });
+    
+    if (params.destination) {
+      postData.destination = params.destination;
+    }
+    
+    if (params.schedule_date) {
+      postData.rdate = params.schedule_date;
+    }
+    
+    if (params.schedule_time) {
+      postData.rtime = params.schedule_time;
+    }
+    
+    // 이미지 첨부가 필요한 경우 (MMS)
+    if (params.msg_type === 'MMS' && params.image_path) {
+      if (!fs.existsSync(params.image_path)) {
+        throw new Error(`이미지 파일을 찾을 수 없습니다: ${params.image_path}`);
+      }
+      
+      // FormData 사용하여 multipart/form-data 요청 생성
+      const form = new FormData();
+      
+      // 텍스트 필드 추가
+      Object.keys(postData).forEach(key => {
+        form.append(key, postData[key]);
+      });
+      
+      // 이미지 파일 추가
+      const fileStream = fs.createReadStream(params.image_path);
+      const fileName = path.basename(params.image_path);
+      form.append('image', fileStream, {
+        filename: fileName,
+        contentType: getMimeType(fileName)
+      });
+      
+      // axios로 요청 전송
+      const response = await axios.post(apiUrl, form, {
+        headers: {
+          ...form.getHeaders()
+        },
+        timeout: 30000 // 30초 타임아웃
+      });
+      
+      debug('API 응답:', response.data);
+      return response.data;
+      
+    } else {
+      // 일반 텍스트 메시지 (MMS가 아니거나 이미지가 없는 경우)
+      const response = await axios.post(apiUrl, postData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        timeout: 30000 // 30초 타임아웃
+      });
+      
+      debug('API 응답:', response.data);
+      return response.data;
+    }
+  } catch (error) {
+    debug('알리고 SMS 전송 오류:', error);
+    if (error.response) {
+      // 서버가 응답을 반환한 경우
+      debug('응답 상태:', error.response.status);
+      debug('응답 데이터:', error.response.data);
+      throw new Error(`API 오류: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+    } else if (error.request) {
+      // 요청이 전송되었지만 응답을 받지 못한 경우
+      throw new Error('API 서버로부터 응답을 받지 못했습니다.');
+    } else {
+      // 요청 설정 중 오류가 발생한 경우
+      throw error;
+    }
+  }
 }
 
 /**
